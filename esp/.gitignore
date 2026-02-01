@@ -1,0 +1,25 @@
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# PlatformIO khusus
+.pio/
+.pioenvs/
+.piolibdeps/
+.clang-format
+
+# Node.js / Next.js
+node_modules/
+.next/
+out/
+build/
+.env*.local
+
+# OS Metadata
+.DS_Store
+Thumbs.db
+
+# Secrets (copy from config.example.h)
+include/config.h
