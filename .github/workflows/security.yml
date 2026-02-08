@@ -39,14 +39,14 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run Trivy on dashboard
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.29.0
         with:
           scan-type: fs
           scan-ref: dashboard
           exit-code: 0
 
       - name: Run Trivy on esp firmware
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.29.0
         with:
           scan-type: fs
           scan-ref: esp
