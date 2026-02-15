@@ -14,9 +14,10 @@ interface ScheduleState {
 interface ScheduleProps {
   schedule: ScheduleState;
   setSchedule: (s: ScheduleState) => void;
+  onSync: () => Promise<void>;
 }
 
-export default function ScheduleCard({ schedule, setSchedule }: ScheduleProps) {
+export default function ScheduleCard({ schedule, setSchedule, onSync }: ScheduleProps) {
   const revealRef = useScrollReveal();
   const buttonRef = useMagnetic();
 
@@ -40,7 +41,10 @@ export default function ScheduleCard({ schedule, setSchedule }: ScheduleProps) {
           />
 
           <div ref={buttonRef}>
-            <button className="w-full py-5 bg-blue-600 hover:bg-blue-500 rounded-2xl font-black text-[10px] tracking-[0.3em] flex items-center justify-center gap-3 transition-all shadow-2xl shadow-blue-500/20 text-white uppercase active:scale-95">
+            <button
+              onClick={onSync}
+              className="w-full py-5 bg-blue-600 hover:bg-blue-500 rounded-2xl font-black text-[10px] tracking-[0.3em] flex items-center justify-center gap-3 transition-all shadow-2xl shadow-blue-500/20 text-white uppercase active:scale-95"
+            >
               <Send size={16} /> Sync to Cloud
             </button>
           </div>

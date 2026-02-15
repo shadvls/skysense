@@ -9,17 +9,42 @@ interface ScheduleState {
   pull: string;
 }
 
+function loadSchedule(): ScheduleState {
+  if (typeof window === "undefined") return { push: "08:00", pull: "16:00" };
+  try {
+    const saved = localStorage.getItem("skysense-schedule");
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return { push: "08:00", pull: "16:00" };
+}
+
 export default function Dashboard() {
   const [data, setData] = useState({
     sensorValue: 1024,
     status: "Kering",
     online: false,
   });
-  const [schedule, setSchedule] = useState<ScheduleState>({
-    push: "08:00",
-    pull: "16:00",
-  });
+  const [schedule, setSchedule] = useState<ScheduleState>(loadSchedule);
   const [isSending, setIsSending] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("skysense-schedule", JSON.stringify(schedule));
+  }, [schedule]);
+
+  const handleSyncSchedule = async () => {
+    try {
+      const res = await fetch("/api/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schedule }),
+      });
+      if (!res.ok) throw new Error("Sync failed");
+      alert("Schedule synced to cloud!");
+    } catch (error) {
+      console.error("[SYNC_ERROR]:", error);
+      alert("Failed to sync schedule.");
+    }
+  };
 
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -61,7 +86,7 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <SensorCard data={data} onCommand={sendCommand} />
-        <ScheduleCard schedule={schedule} setSchedule={setSchedule} />
+        <ScheduleCard schedule={schedule} setSchedule={setSchedule} onSync={handleSyncSchedule} />
       </div>
     </main>
   );
