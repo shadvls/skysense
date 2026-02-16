@@ -4,8 +4,10 @@ let pendingAction: string | null = null;
 
 export async function GET() {
   if (pendingAction) {
+    const action = pendingAction;
+    pendingAction = null;
     return NextResponse.json({
-      action: pendingAction,
+      action,
       pending: true,
     });
   }
