@@ -6,12 +6,15 @@ export async function GET() {
   if (pendingAction) {
     const action = pendingAction;
     pendingAction = null;
-    return NextResponse.json({
-      action,
-      pending: true,
-    });
+    return NextResponse.json(
+      { action, pending: true },
+      { headers: { "Cache-Control": "no-store, max-age=0" } },
+    );
   }
-  return NextResponse.json({ action: null, pending: false });
+  return NextResponse.json(
+    { action: null, pending: false },
+    { headers: { "Cache-Control": "no-store, max-age=0" } },
+  );
 }
 
 export async function POST(request: Request) {
