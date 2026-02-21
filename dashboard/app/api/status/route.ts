@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
 
+const ALLOWED_KEYS = new Set([
+  "sensorValue",
+  "status",
+  "schedule",
+  "lastUpdate",
+]);
+
 let systemState: Record<string, unknown> = {
   sensorValue: 1024,
   status: "Kering",
@@ -34,9 +41,16 @@ export async function POST(request: Request) {
       throw new Error("Payload is not a valid object");
     }
 
+    const filtered: Record<string, unknown> = {};
+    for (const key of Object.keys(body)) {
+      if (ALLOWED_KEYS.has(key)) {
+        filtered[key] = body[key];
+      }
+    }
+
     systemState = {
       ...systemState,
-      ...body,
+      ...filtered,
       lastUpdate: new Date().toISOString(),
     };
 
