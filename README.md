@@ -6,7 +6,9 @@ IoT-based automatic laundry retraction system. ESP8266 detects rain via analog s
 [![Security Scan](https://github.com/shadvls/skysense/actions/workflows/security.yml/badge.svg)](https://github.com/shadvls/skysense/actions/workflows/security.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
 [![ESP8266](https://img.shields.io/badge/ESP8266-PlatformIO-FF6600?logo=espressif&logoColor=white)](https://platformio.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/Version-1.0.0-blue)](https://github.com/shadvls/skysense/releases/tag/v1.0.0)
 
 ---
 
