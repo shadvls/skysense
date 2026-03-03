@@ -1,11 +1,11 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
-import { Clock, Settings2, Send, CloudRain } from "lucide-react";
+import { useState } from "react";
+import { Clock, Settings2, Send, CloudRain, Loader2 } from "lucide-react";
 import useScrollReveal from "@/app/hooks/useScrollReveal";
 import useMagnetic from "@/app/hooks/useMagnetic";
 
-// Mendefinisikan interface yang jelas untuk State Schedule
 interface ScheduleState {
   push: string;
   pull: string;
@@ -20,6 +20,16 @@ interface ScheduleProps {
 export default function ScheduleCard({ schedule, setSchedule, onSync }: ScheduleProps) {
   const revealRef = useScrollReveal();
   const buttonRef = useMagnetic();
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      await onSync();
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   return (
     <div ref={revealRef} className="space-y-6">
@@ -42,10 +52,12 @@ export default function ScheduleCard({ schedule, setSchedule, onSync }: Schedule
 
           <div ref={buttonRef}>
             <button
-              onClick={onSync}
-              className="w-full py-5 bg-blue-600 hover:bg-blue-500 rounded-2xl font-black text-[10px] tracking-[0.3em] flex items-center justify-center gap-3 transition-all shadow-2xl shadow-blue-500/20 text-white uppercase active:scale-95"
+              onClick={handleSync}
+              disabled={syncing}
+              className="w-full py-5 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed rounded-2xl font-black text-[10px] tracking-[0.3em] flex items-center justify-center gap-3 transition-all shadow-2xl shadow-blue-500/20 text-white uppercase active:scale-95"
             >
-              <Send size={16} /> Sync to Cloud
+              {syncing ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+              {syncing ? "Syncing..." : "Sync to Cloud"}
             </button>
           </div>
         </div>
