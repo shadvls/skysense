@@ -31,9 +31,20 @@ export default function Dashboard() {
     localStorage.setItem("skysense-schedule", JSON.stringify(schedule));
   }, [schedule]);
 
+  const fetchWithTimeout = async (url: string, options?: RequestInit, timeout = 5000) => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    try {
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      return res;
+    } finally {
+      clearTimeout(id);
+    }
+  };
+
   const handleSyncSchedule = async () => {
     try {
-      const res = await fetch("/api/status", {
+      const res = await fetchWithTimeout("/api/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ schedule }),
@@ -49,7 +60,7 @@ export default function Dashboard() {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const res = await fetch("/api/status");
+        const res = await fetchWithTimeout("/api/status");
         if (!res.ok) throw new Error("Fetch failed");
         const json = await res.json();
         setData(json);
