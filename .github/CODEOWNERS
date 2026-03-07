@@ -1,0 +1,11 @@
+# Global owners
+* @shadvls
+
+# CI/CD workflows
+.github/workflows/ @shadvls
+
+# Dashboard code
+dashboard/ @shadvls
+
+# ESP firmware
+esp/ @shadvls
