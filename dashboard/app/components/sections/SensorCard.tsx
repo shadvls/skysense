@@ -70,7 +70,7 @@ export default function SensorCard({ data, onCommand }: SensorProps) {
           >
             <h2
               ref={sensorRef}
-              className="text-7xl md:text-[10rem] font-black text-white leading-none tracking-tighter inline-block"
+              className="text-5xl sm:text-7xl md:text-[10rem] font-black text-white leading-none tracking-tighter inline-block break-all"
             >
               0
             </h2>
