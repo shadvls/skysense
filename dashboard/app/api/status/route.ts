@@ -7,6 +7,8 @@ const ALLOWED_KEYS = new Set([
   "lastUpdate",
 ]);
 
+const startupTime = Date.now();
+
 let systemState: Record<string, unknown> = {
   sensorValue: 1024,
   status: "Kering",
@@ -18,11 +20,13 @@ let systemState: Record<string, unknown> = {
 };
 
 export async function GET() {
+  const uptime = Date.now() - startupTime;
   const state = {
     ...systemState,
     online:
       Date.now() - new Date(systemState.lastUpdate as string).getTime() <
       10000,
+    uptime,
   };
 
   return NextResponse.json(state, {
