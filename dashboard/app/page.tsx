@@ -1,8 +1,9 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import DashboardHeader from "./components/sections/DashboardHeader";
 import SensorCard from "./components/sections/SensorCard";
 import ScheduleCard from "./components/sections/ScheduleCard";
+import useStatusPolling from "./hooks/useStatusPolling";
 
 interface ScheduleState {
   push: string;
@@ -19,11 +20,7 @@ function loadSchedule(): ScheduleState {
 }
 
 export default function Dashboard() {
-  const [data, setData] = useState({
-    sensorValue: 1024,
-    status: "Kering",
-    online: false,
-  });
+  const data = useStatusPolling(2000);
   const [schedule, setSchedule] = useState<ScheduleState>(loadSchedule);
   const [isSending, setIsSending] = useState(false);
 
@@ -31,20 +28,9 @@ export default function Dashboard() {
     localStorage.setItem("skysense-schedule", JSON.stringify(schedule));
   }, [schedule]);
 
-  const fetchWithTimeout = async (url: string, options?: RequestInit, timeout = 5000) => {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), timeout);
+  const handleSyncSchedule = useCallback(async () => {
     try {
-      const res = await fetch(url, { ...options, signal: controller.signal });
-      return res;
-    } finally {
-      clearTimeout(id);
-    }
-  };
-
-  const handleSyncSchedule = async () => {
-    try {
-      const res = await fetchWithTimeout("/api/status", {
+      const res = await fetch("/api/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ schedule }),
@@ -55,21 +41,7 @@ export default function Dashboard() {
       console.error("[SYNC_ERROR]:", error);
       alert("Failed to sync schedule.");
     }
-  };
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetchWithTimeout("/api/status");
-        if (!res.ok) throw new Error("Fetch failed");
-        const json = await res.json();
-        setData(json);
-      } catch (error) {
-        console.error("[FETCH_ERROR]:", error);
-      }
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
+  }, [schedule]);
 
   const sendCommand = async (cmd: "push" | "pull") => {
     setIsSending(true);
