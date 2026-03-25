@@ -4,6 +4,7 @@ import DashboardHeader from "./components/sections/DashboardHeader";
 import SensorCard from "./components/sections/SensorCard";
 import ScheduleCard from "./components/sections/ScheduleCard";
 import useStatusPolling from "./hooks/useStatusPolling";
+import { showToast } from "./components/shared/Toast";
 
 interface ScheduleState {
   push: string;
@@ -36,10 +37,10 @@ export default function Dashboard() {
         body: JSON.stringify({ schedule }),
       });
       if (!res.ok) throw new Error("Sync failed");
-      alert("Schedule synced to cloud!");
+      showToast("success", "Schedule synced to cloud!");
     } catch (error) {
       console.error("[SYNC_ERROR]:", error);
-      alert("Failed to sync schedule.");
+      showToast("error", "Failed to sync schedule.");
     }
   }, [schedule]);
 

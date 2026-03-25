@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Preloader from "./Preloader";
 import OverlaySystem from "./OverlaySystem";
 import BackgroundGradient from "./BackgroundGradient";
+import Toast from "./Toast";
 
 export default function ClientProvider({
   children,
@@ -26,6 +27,7 @@ export default function ClientProvider({
       {/* Background & Overlay dirender di luar AnimatePresence agar selalu aktif */}
       <BackgroundGradient />
       <OverlaySystem />
+      <Toast />
 
       <AnimatePresence mode="wait">
         {loading ? (
