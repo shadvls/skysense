@@ -21,11 +21,10 @@ let systemState: Record<string, unknown> = {
 
 export async function GET() {
   const uptime = Date.now() - startupTime;
+  const lastUpdate = new Date(systemState.lastUpdate as string).getTime();
   const state = {
     ...systemState,
-    online:
-      Date.now() - new Date(systemState.lastUpdate as string).getTime() <
-      10000,
+    online: !isNaN(lastUpdate) && Date.now() - lastUpdate < 10000,
     uptime,
   };
 
