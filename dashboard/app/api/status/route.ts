@@ -1,11 +1,5 @@
 import { NextResponse } from "next/server";
-
-const ALLOWED_KEYS = new Set([
-  "sensorValue",
-  "status",
-  "schedule",
-  "lastUpdate",
-]);
+import { validateStatusBody } from "./schema";
 
 const startupTime = Date.now();
 
@@ -38,18 +32,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-
-    // Validasi sederhana untuk memastikan integritas data
-    if (!body || typeof body !== "object") {
-      throw new Error("Payload is not a valid object");
-    }
-
-    const filtered: Record<string, unknown> = {};
-    for (const key of Object.keys(body)) {
-      if (ALLOWED_KEYS.has(key)) {
-        filtered[key] = body[key];
-      }
-    }
+    const filtered = validateStatusBody(body);
 
     systemState = {
       ...systemState,
