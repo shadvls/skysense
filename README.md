@@ -241,6 +241,22 @@ Copy from `config.example.h`, then fill in:
 
 ---
 
+## Development
+
+```bash
+# Start the dashboard locally
+scripts/dev.sh
+
+# Or manually:
+cd dashboard
+npm install
+npm run dev
+```
+
+The dashboard runs on `http://localhost:3000`. ESP firmware can push to `http://localhost:3000/api/status` when running locally.
+
+---
+
 ## Release & Versioning
 
 Releases follow [Semantic Versioning](https://semver.org/). See the [releases page](https://github.com/shadvls/skysense/releases) for changelogs.
