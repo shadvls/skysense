@@ -2,7 +2,7 @@
 
 IoT-based automatic laundry retraction system. ESP8266 detects rain via analog sensor, controls a servo motor to retract/deploy laundry, and provides real-time monitoring via a Telegram bot and Next.js dashboard.
 
-[![Dashboard CI](https://github.com/shadvls/skysense/actions/workflows/ci.yml/badge.svg)](https://github.com/shadvls/skysense/actions/workflows/ci.yml)
+[![Dashboard CI](https://github.com/shadvls/skysense/actions/workflows/ci.yml/badge.svg)](https://github.com/shadvls/skysense/actions)
 [![Security Scan](https://github.com/shadvls/skysense/actions/workflows/security.yml/badge.svg)](https://github.com/shadvls/skysense/actions/workflows/security.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
 [![ESP8266](https://img.shields.io/badge/ESP8266-PlatformIO-FF6600?logo=espressif&logoColor=white)](https://platformio.org/)
