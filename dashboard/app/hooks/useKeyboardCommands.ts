@@ -3,9 +3,9 @@ import { useEffect, useRef } from "react";
 
 export default function useKeyboardCommands(commands: Record<string, () => void>) {
   const ref = useRef(commands);
-  ref.current = commands;
 
   useEffect(() => {
+    ref.current = commands;
     const handler = (e: KeyboardEvent) => {
       if (
         e.target instanceof HTMLInputElement ||
@@ -22,5 +22,5 @@ export default function useKeyboardCommands(commands: Record<string, () => void>
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, []);
+  }, [commands]);
 }
