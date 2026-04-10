@@ -21,7 +21,7 @@ UniversalTelegramBot bot(botToken, client);
 Servo jemuranServo;
 
 unsigned long lastTimeUpdate = 0;
-const int updateInterval = 5000; // Update ke dashboard tiap 5 detik
+const int updateInterval = 200; // Update sensor setiap 200ms
 
 void sendDataToDashboard(int sensorValue, String status) {
     if (WiFi.status() == WL_CONNECTED) {
