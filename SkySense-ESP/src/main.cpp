@@ -11,76 +11,133 @@ const char* ssid = "Yansha";
 const char* password = "YOUR_WIFI_PASSWORD";
 const char* botToken = "YOUR_BOT_TOKEN";
 const char* chatId = "YOUR_CHAT_ID";
-const char* dashboardApi = "https://skysense.yansha.dev/api/status"; // Ganti setelah deploy
 
+// URL Dashboard Baru
+const char* dashboardApi = "https://skysense.yansha.dev/api/status"; 
+
+// --- PIN MAPPING ---
 const int RAIN_SENSOR_PIN = A0;
 const int SERVO_PIN = D1;
+
+// --- PARAMETER & STATE ---
+const int RAIN_THRESHOLD = 500; 
+const int botRequestDelay = 500; 
+unsigned long lastTimeBotRan = 0;
+unsigned long lastTimeDashboardUpdate = 0;
+const int dashboardInterval = 5000; 
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(botToken, client);
 Servo jemuranServo;
+bool laundryProtected = false;
 
-unsigned long lastTimeUpdate = 0;
-const int updateInterval = 200; // Update sensor setiap 200ms
+// --- PROTOTYPES ---
+void connectWiFi();
+void handleNewMessages(int numNewMessages);
+void sendDataToDashboard(int sensorValue, String status);
+
+void connectWiFi() {
+    if (WiFi.status() == WL_CONNECTED) return;
+    Serial.print("Connecting to WiFi...");
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("\nWiFi Connected!");
+}
 
 void sendDataToDashboard(int sensorValue, String status) {
-    if (WiFi.status() == WL_CONNECTED) {
-        HTTPClient http;
-        client.setInsecure();
-        http.begin(client, dashboardApi);
+    WiFiClientSecure httpsClient;
+    httpsClient.setInsecure(); // Mengabaikan verifikasi SSL untuk performa
+    
+    HTTPClient http;
+    if (http.begin(httpsClient, dashboardApi)) {
         http.addHeader("Content-Type", "application/json");
-
-        StaticJsonDocument<200> doc;
+        
+        StaticJsonDocument<128> doc;
         doc["sensorValue"] = sensorValue;
         doc["status"] = status;
+        
         String requestBody;
         serializeJson(doc, requestBody);
-
+        
         int httpResponseCode = http.POST(requestBody);
+        Serial.printf("[HTTP] POST Response: %d\n", httpResponseCode);
         http.end();
+    }
+}
+
+void handleNewMessages(int numNewMessages) {
+    for (int i = 0; i < numNewMessages; i++) {
+        String chat_id = String(bot.messages[i].chat_id);
+        if (chat_id != chatId) continue;
+
+        String text = bot.messages[i].text;
+        if (text == "/push") {
+            jemuranServo.write(0);
+            laundryProtected = false;
+            bot.sendMessage(chatId, "☀️ *Manual:* Membuka jemuran (0°)", "Markdown");
+        } else if (text == "/pull") {
+            jemuranServo.write(180);
+            laundryProtected = true;
+            bot.sendMessage(chatId, "🌧️ *Manual:* Menutup jemuran (180°)", "Markdown");
+        }
     }
 }
 
 void setup() {
     Serial.begin(115200);
+    
     jemuranServo.attach(SERVO_PIN);
+    jemuranServo.write(0);
+    
+    pinMode(RAIN_SENSOR_PIN, INPUT);
+    
+    connectWiFi();
+    
+    // Sinkronisasi Waktu
+    configTime(0, 0, "pool.ntp.org", "time.nist.gov");
     client.setInsecure();
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) { delay(500); }
-    configTime(0, 0, "pool.ntp.org");
+    
+    bot.sendMessage(chatId, "🤖 *SkySense Online!*\nDashboard: https://skysense.yansha.dev/", "Markdown");
 }
 
 void loop() {
     if (WiFi.status() != WL_CONNECTED) connectWiFi();
 
-    if (millis() > lastTimeBotRan + botRequestDelay) {
-        // 1. CEK PESAN TELEGRAM
+    unsigned long currentMillis = millis();
+
+    // Jalankan pengecekan bot dan sensor
+    if (currentMillis - lastTimeBotRan > botRequestDelay) {
+        // 1. Cek Telegram
         int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
         while (numNewMessages) {
             handleNewMessages(numNewMessages);
             numNewMessages = bot.getUpdates(bot.last_message_received + 1);
         }
 
-        // 2. CEK SENSOR OTOMATIS
+        // 2. Baca Sensor & Logika Otomatis
         int sensorValue = analogRead(RAIN_SENSOR_PIN);
-        Serial.print("Nilai Sensor: ");
-        Serial.println(sensorValue);
+        String currentStatus = (sensorValue < RAIN_THRESHOLD) ? "Basah" : "Kering";
 
-        if (sensorValue < RAIN_THRESHOLD) { // KONDISI HUJAN
-            if (!laundryProtected) {
-                jemuranServo.write(180);
-                bot.sendMessage(chatId, "⚠️ *Otomatis:* Hujan terdeteksi! Menutup...", "Markdown");
-                laundryProtected = true;
-            }
-        } else { // KONDISI KERING
-            if (laundryProtected && sensorValue > (RAIN_THRESHOLD + 100)) { 
-                // (+100 untuk hysteresis agar tidak gerak-gerak terus saat sensor lembab)
-                jemuranServo.write(0);
-                bot.sendMessage(chatId, "☀️ *Otomatis:* Cuaca cerah! Membuka...", "Markdown");
-                laundryProtected = false;
-            }
+        if (sensorValue < RAIN_THRESHOLD && !laundryProtected) {
+            jemuranServo.write(180);
+            bot.sendMessage(chatId, "⚠️ *Otomatis:* Hujan! Menutup jemuran...", "Markdown");
+            laundryProtected = true;
+        } 
+        else if (sensorValue > (RAIN_THRESHOLD + 100) && laundryProtected) {
+            jemuranServo.write(0);
+            bot.sendMessage(chatId, "☀️ *Otomatis:* Cuaca membaik! Membuka kembali...", "Markdown");
+            laundryProtected = false;
         }
-        
-        lastTimeBotRan = millis();
+
+        // 3. Update Dashboard Next.js
+        if (currentMillis - lastTimeDashboardUpdate > dashboardInterval) {
+            sendDataToDashboard(sensorValue, currentStatus);
+            lastTimeDashboardUpdate = currentMillis;
+        }
+
+        lastTimeBotRan = currentMillis;
     }
 }
