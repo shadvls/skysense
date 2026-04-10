@@ -20,11 +20,11 @@ const int RAIN_SENSOR_PIN = A0;
 const int SERVO_PIN = D1;
 
 // --- PARAMETER & STATE ---
-const int RAIN_THRESHOLD = 500; 
-const int botRequestDelay = 500; 
+const int RAIN_THRESHOLD = 750; 
+const int botRequestDelay = 100; 
 unsigned long lastTimeBotRan = 0;
 unsigned long lastTimeDashboardUpdate = 0;
-const int dashboardInterval = 5000; 
+const int dashboardInterval = 100; 
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(botToken, client);
