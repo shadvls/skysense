@@ -1,3 +1,5 @@
+import { sanitizeNumber, sanitizeObject, sanitizeString } from "@/lib/sanitize";
+
 const ALLOWED_KEYS = new Set([
   "sensorValue",
   "status",
@@ -5,15 +7,13 @@ const ALLOWED_KEYS = new Set([
   "lastUpdate",
 ]);
 
+const SANITIZERS = {
+  sensorValue: (v: unknown) => sanitizeNumber(v, 0),
+  status: (v: unknown) => sanitizeString(String(v ?? ""), 50),
+  schedule: (v: unknown) => v,
+  lastUpdate: (v: unknown) => sanitizeString(String(v ?? ""), 32),
+};
+
 export function validateStatusBody(body: unknown): Record<string, unknown> {
-  if (!body || typeof body !== "object") {
-    throw new Error("Payload is not a valid object");
-  }
-  const filtered: Record<string, unknown> = {};
-  for (const key of Object.keys(body as Record<string, unknown>)) {
-    if (ALLOWED_KEYS.has(key)) {
-      filtered[key] = (body as Record<string, unknown>)[key];
-    }
-  }
-  return filtered;
+  return sanitizeObject(body, ALLOWED_KEYS, SANITIZERS);
 }
