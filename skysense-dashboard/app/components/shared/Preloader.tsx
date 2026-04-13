@@ -21,7 +21,7 @@ export default function Preloader() {
   }, []);
 
   return (
-    <div className="preloader-bg fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#020617] overflow-hidden">
+    <div className="preloader-bg fixed inset-0 z-9999 flex flex-col items-center justify-center bg-[#020617] overflow-hidden">
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -37,12 +37,12 @@ export default function Preloader() {
           SkySense <span className="text-blue-500">AI</span>
         </h2>
 
-        <div className="mt-4 h-[2px] w-48 bg-slate-800 relative overflow-hidden">
+        <div className="mt-4 h-0.5 w-48 bg-slate-800 relative overflow-hidden">
           <motion.div
             initial={{ left: "-100%" }}
             animate={{ left: "100%" }}
             transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-            className="absolute top-0 bottom-0 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent"
+            className="absolute top-0 bottom-0 w-1/2 bg-linear-to-r from-transparent via-blue-500 to-transparent"
           />
         </div>
         <p className="mt-4 text-[10px] font-bold text-slate-500 tracking-widest uppercase">

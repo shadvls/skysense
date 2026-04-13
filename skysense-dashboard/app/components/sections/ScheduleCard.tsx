@@ -5,9 +5,15 @@ import { Clock, Settings2, Send, CloudRain } from "lucide-react";
 import useScrollReveal from "@/app/hooks/useScrollReveal";
 import useMagnetic from "@/app/hooks/useMagnetic";
 
+// Mendefinisikan interface yang jelas untuk State Schedule
+interface ScheduleState {
+  push: string;
+  pull: string;
+}
+
 interface ScheduleProps {
-  schedule: { push: string; pull: string };
-  setSchedule: (s: any) => void;
+  schedule: ScheduleState;
+  setSchedule: (s: ScheduleState) => void;
 }
 
 export default function ScheduleCard({ schedule, setSchedule }: ScheduleProps) {
@@ -25,14 +31,12 @@ export default function ScheduleCard({ schedule, setSchedule }: ScheduleProps) {
           <TimeInput
             label="A.M. Deployment"
             value={schedule.push}
-            onChange={(v) => setSchedule({ ...schedule, push: v })}
-            color="blue"
+            onChange={(v: string) => setSchedule({ ...schedule, push: v })}
           />
           <TimeInput
             label="P.M. Retraction"
             value={schedule.pull}
-            onChange={(v) => setSchedule({ ...schedule, pull: v })}
-            color="indigo"
+            onChange={(v: string) => setSchedule({ ...schedule, pull: v })}
           />
 
           <div ref={buttonRef}>
@@ -45,7 +49,7 @@ export default function ScheduleCard({ schedule, setSchedule }: ScheduleProps) {
 
       <motion.div
         whileHover={{ scale: 1.02 }}
-        className="bg-gradient-to-r from-indigo-600/20 to-blue-600/10 border border-indigo-500/30 p-8 rounded-[2.5rem] flex items-center gap-5"
+        className="bg-linear-to-r from-indigo-600/20 to-blue-600/10 border border-indigo-500/30 p-8 rounded-[2.5rem] flex items-center gap-5"
       >
         <div className="bg-indigo-500/20 p-4 rounded-2xl border border-indigo-500/50">
           <CloudRain size={24} className="text-indigo-400" />
@@ -64,13 +68,20 @@ export default function ScheduleCard({ schedule, setSchedule }: ScheduleProps) {
   );
 }
 
-function TimeInput({ label, value, onChange, color }: any) {
+// Interface untuk Props TimeInput
+interface TimeInputProps {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}
+
+function TimeInput({ label, value, onChange }: TimeInputProps) {
   return (
     <div className="group">
       <label className="text-[9px] font-black text-slate-500 uppercase ml-2 mb-2 block group-hover:text-blue-400 transition-colors tracking-widest">
         {label}
       </label>
-      <div className="flex items-center gap-4 p-5 bg-slate-900/60 rounded-[1.5rem] border border-slate-700 group-focus-within:border-blue-500/50 transition-all">
+      <div className="flex items-center gap-4 p-5 bg-slate-900/60 rounded-3xl border border-slate-700 group-focus-within:border-blue-500/50 transition-all">
         <Clock
           className="text-slate-600 group-focus-within:text-blue-400"
           size={20}
@@ -78,8 +89,10 @@ function TimeInput({ label, value, onChange, color }: any) {
         <input
           type="time"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="bg-transparent border-none outline-none text-xl font-bold w-full text-white [color-scheme:dark]"
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            onChange(e.target.value)
+          }
+          className="bg-transparent border-none outline-none text-xl font-bold w-full text-white scheme-dark"
         />
       </div>
     </div>

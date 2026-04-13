@@ -30,7 +30,7 @@ export default function SensorCard({ data, onCommand }: SensorProps) {
   return (
     <motion.div
       style={{ x: pushX, y: pushY }}
-      className="md:col-span-2 bg-slate-900/60 backdrop-blur-2xl p-6 md:p-10 rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden group min-h-[450px] flex flex-col justify-between"
+      className="md:col-span-2 bg-slate-900/60 backdrop-blur-2xl p-6 md:p-10 rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden group min-h-112.5 flex flex-col justify-between"
     >
       {/* 1. Background Watermark - Dibuat sangat transparan agar tidak nabrak teks utama */}
       <div className="absolute -top-10 -right-10 opacity-[0.03] group-hover:opacity-10 transition-opacity duration-1000 pointer-events-none">
