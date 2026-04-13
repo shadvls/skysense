@@ -4,19 +4,30 @@ import DashboardHeader from "./components/sections/DashboardHeader";
 import SensorCard from "./components/sections/SensorCard";
 import ScheduleCard from "./components/sections/ScheduleCard";
 
+// Definisikan interface agar sinkron dengan komponen ScheduleCard
+interface ScheduleState {
+  push: string;
+  pull: string;
+}
+
 export default function Dashboard() {
   const [data, setData] = useState({ sensorValue: 1024, status: "Kering" });
-  const [schedule, setSchedule] = useState({ push: "08:00", pull: "16:00" });
+  const [schedule, setSchedule] = useState<ScheduleState>({
+    push: "08:00",
+    pull: "16:00",
+  });
   const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
         const res = await fetch("/api/status");
+        if (!res.ok) throw new Error("Fetch failed");
         const json = await res.json();
         setData(json);
-      } catch (err) {
-        console.error("Failed to fetch data");
+      } catch (error) {
+        // Menggunakan error untuk logging agar tidak kena warning unused-vars
+        console.error("[FETCH_ERROR]:", error);
       }
     }, 2000);
     return () => clearInterval(interval);
@@ -25,12 +36,17 @@ export default function Dashboard() {
   const sendCommand = async (cmd: "push" | "pull") => {
     setIsSending(true);
     try {
-      await fetch("/api/control", {
+      const res = await fetch("/api/control", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: cmd }),
       });
+
+      if (!res.ok) throw new Error("Control failed");
+
       alert(`Perintah /${cmd} berhasil dikirim!`);
-    } catch (err) {
+    } catch (error) {
+      console.error("[COMMAND_ERROR]:", error);
       alert("Gagal mengirim perintah.");
     } finally {
       setIsSending(false);

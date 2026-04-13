@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
 
 // In-memory storage (Akan reset jika serverless function restart)
-// Untuk permanen, hubungkan ke database seperti Supabase/MongoDB nanti.
 let systemState = {
   sensorValue: 1024,
   status: "Kering",
   lastUpdate: new Date().toISOString(),
-  // Tambahkan state untuk menyimpan jadwal
   schedule: {
     push: "08:00",
     pull: "16:00",
@@ -14,7 +12,6 @@ let systemState = {
 };
 
 export async function GET() {
-  // Berikan header anti-cache agar data selalu fresh
   return NextResponse.json(systemState, {
     headers: {
       "Cache-Control": "no-store, max-age=0",
@@ -26,9 +23,11 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // Logika Update:
-    // Jika body berisi sensorValue, update status sensor.
-    // Jika body berisi schedule, update jadwalnya.
+    // Validasi sederhana untuk memastikan integritas data
+    if (!body || typeof body !== "object") {
+      throw new Error("Payload is not a valid object");
+    }
+
     systemState = {
       ...systemState,
       ...body,
@@ -41,10 +40,14 @@ export async function POST(request: Request) {
       data: systemState,
     });
   } catch (error) {
+    // Menggunakan prefix underscore (_) atau membuang variabel jika memang tidak butuh log spesifik
+    // Di sini saya log ke console untuk mematuhi prinsip observability
+    console.error("[API_STATUS_ERROR]:", error);
+
     return NextResponse.json(
       {
         success: false,
-        message: "Invalid request body",
+        message: "Invalid request body or internal processing error",
       },
       { status: 400 },
     );
