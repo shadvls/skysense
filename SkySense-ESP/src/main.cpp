@@ -21,10 +21,13 @@ const int SERVO_PIN = D1;
 
 // --- PARAMETER & STATE ---
 const int RAIN_THRESHOLD = 750; 
-const int botRequestDelay = 100; 
+
+// Optimasi Delay: Secepat mungkin
+const int botRequestDelay = 500;        // Polling Telegram (Batas aman API Telegram)
+const int dashboardInterval = 100;      // Update Dashboard (0.1 detik untuk realtime feel)
+
 unsigned long lastTimeBotRan = 0;
 unsigned long lastTimeDashboardUpdate = 0;
-const int dashboardInterval = 100; 
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(botToken, client);
@@ -41,7 +44,7 @@ void connectWiFi() {
     Serial.print("Connecting to WiFi...");
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
+        delay(100); // Fast retry
         Serial.print(".");
     }
     Serial.println("\nWiFi Connected!");
@@ -49,7 +52,7 @@ void connectWiFi() {
 
 void sendDataToDashboard(int sensorValue, String status) {
     WiFiClientSecure httpsClient;
-    httpsClient.setInsecure(); // Mengabaikan verifikasi SSL untuk performa
+    httpsClient.setInsecure(); 
     
     HTTPClient http;
     if (http.begin(httpsClient, dashboardApi)) {
@@ -63,7 +66,10 @@ void sendDataToDashboard(int sensorValue, String status) {
         serializeJson(doc, requestBody);
         
         int httpResponseCode = http.POST(requestBody);
-        Serial.printf("[HTTP] POST Response: %d\n", httpResponseCode);
+        // Serial log dikurangi untuk performa
+        if (httpResponseCode < 0) {
+            Serial.printf("[HTTP] Error: %s\n", http.errorToString(httpResponseCode).c_str());
+        }
         http.end();
     }
 }
@@ -77,11 +83,11 @@ void handleNewMessages(int numNewMessages) {
         if (text == "/push") {
             jemuranServo.write(0);
             laundryProtected = false;
-            bot.sendMessage(chatId, "☀️ *Manual:* Membuka jemuran (0°)", "Markdown");
+            bot.sendMessage(chatId, "☀️ *Manual:* Membuka jemuran", "Markdown");
         } else if (text == "/pull") {
             jemuranServo.write(180);
             laundryProtected = true;
-            bot.sendMessage(chatId, "🌧️ *Manual:* Menutup jemuran (180°)", "Markdown");
+            bot.sendMessage(chatId, "🌧️ *Manual:* Menutup jemuran", "Markdown");
         }
     }
 }
@@ -95,12 +101,9 @@ void setup() {
     pinMode(RAIN_SENSOR_PIN, INPUT);
     
     connectWiFi();
-    
-    // Sinkronisasi Waktu
-    configTime(0, 0, "pool.ntp.org", "time.nist.gov");
     client.setInsecure();
     
-    bot.sendMessage(chatId, "🤖 *SkySense Online!*\nDashboard: https://skysense.yansha.dev/", "Markdown");
+    bot.sendMessage(chatId, "🤖 *SkySense Realtime Online!*", "Markdown");
 }
 
 void loop() {
@@ -108,36 +111,34 @@ void loop() {
 
     unsigned long currentMillis = millis();
 
-    // Jalankan pengecekan bot dan sensor
+    // 1. Baca Sensor & Logika Otomatis (INSTAN - Tanpa Delay)
+    int sensorValue = analogRead(RAIN_SENSOR_PIN);
+    String currentStatus = (sensorValue < RAIN_THRESHOLD) ? "Basah" : "Kering";
+
+    if (sensorValue < RAIN_THRESHOLD && !laundryProtected) {
+        jemuranServo.write(180);
+        laundryProtected = true;
+        bot.sendMessage(chatId, "⚠️ *Otomatis:* Hujan!", "Markdown");
+    } 
+    else if (sensorValue > (RAIN_THRESHOLD + 100) && laundryProtected) {
+        jemuranServo.write(0);
+        laundryProtected = false;
+        bot.sendMessage(chatId, "☀️ *Otomatis:* Cerah!", "Markdown");
+    }
+
+    // 2. Update Dashboard (Fast Track: 100ms)
+    if (currentMillis - lastTimeDashboardUpdate > dashboardInterval) {
+        sendDataToDashboard(sensorValue, currentStatus);
+        lastTimeDashboardUpdate = currentMillis;
+    }
+
+    // 3. Cek Telegram (Normal Track: 500ms)
+    // Polling Telegram berat, jadi diletakkan paling akhir agar tidak mengganggu sensor
     if (currentMillis - lastTimeBotRan > botRequestDelay) {
-        // 1. Cek Telegram
         int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
-        while (numNewMessages) {
+        if (numNewMessages) {
             handleNewMessages(numNewMessages);
-            numNewMessages = bot.getUpdates(bot.last_message_received + 1);
         }
-
-        // 2. Baca Sensor & Logika Otomatis
-        int sensorValue = analogRead(RAIN_SENSOR_PIN);
-        String currentStatus = (sensorValue < RAIN_THRESHOLD) ? "Basah" : "Kering";
-
-        if (sensorValue < RAIN_THRESHOLD && !laundryProtected) {
-            jemuranServo.write(180);
-            bot.sendMessage(chatId, "⚠️ *Otomatis:* Hujan! Menutup jemuran...", "Markdown");
-            laundryProtected = true;
-        } 
-        else if (sensorValue > (RAIN_THRESHOLD + 100) && laundryProtected) {
-            jemuranServo.write(0);
-            bot.sendMessage(chatId, "☀️ *Otomatis:* Cuaca membaik! Membuka kembali...", "Markdown");
-            laundryProtected = false;
-        }
-
-        // 3. Update Dashboard Next.js
-        if (currentMillis - lastTimeDashboardUpdate > dashboardInterval) {
-            sendDataToDashboard(sensorValue, currentStatus);
-            lastTimeDashboardUpdate = currentMillis;
-        }
-
         lastTimeBotRan = currentMillis;
     }
 }
