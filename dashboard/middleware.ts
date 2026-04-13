@@ -12,6 +12,15 @@ function getClientIp(request: NextRequest): string {
 }
 
 export function middleware(request: NextRequest) {
+  if (request.method === "OPTIONS") {
+    const preflight = new NextResponse(null, { status: 204 });
+    preflight.headers.set("Access-Control-Allow-Origin", "*");
+    preflight.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    preflight.headers.set("Access-Control-Allow-Headers", "Content-Type");
+    preflight.headers.set("Access-Control-Max-Age", "86400");
+    return preflight;
+  }
+
   const ip = getClientIp(request);
   const now = Date.now();
   const entry = rateLimit.get(ip);
@@ -19,7 +28,10 @@ export function middleware(request: NextRequest) {
   if (!entry || now > entry.resetAt) {
     rateLimit.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
   } else if (entry.count >= RATE_LIMIT_MAX) {
-    return new NextResponse("Too Many Requests", { status: 429 });
+    const blockResponse = new NextResponse("Too Many Requests", { status: 429 });
+    blockResponse.headers.set("Access-Control-Allow-Origin", "*");
+    blockResponse.headers.set("Retry-After", "60");
+    return blockResponse;
   } else {
     entry.count++;
   }
@@ -28,7 +40,12 @@ export function middleware(request: NextRequest) {
     console.log(`[${request.method}] ${request.nextUrl.pathname}`);
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  response.headers.set("Access-Control-Allow-Origin", "*");
+  response.headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+
+  return response;
 }
 
 export const config = {
