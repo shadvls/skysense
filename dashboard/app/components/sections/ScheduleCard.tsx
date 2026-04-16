@@ -5,11 +5,7 @@ import { useState } from "react";
 import { Clock, Settings2, Send, CloudRain, Loader2 } from "lucide-react";
 import useScrollReveal from "@/app/hooks/useScrollReveal";
 import useMagnetic from "@/app/hooks/useMagnetic";
-
-interface ScheduleState {
-  push: string;
-  pull: string;
-}
+import type { ScheduleState } from "@/lib/types";
 
 interface ScheduleProps {
   schedule: ScheduleState;

@@ -5,11 +5,7 @@ import SensorCard from "./components/sections/SensorCard";
 import ScheduleCard from "./components/sections/ScheduleCard";
 import useStatusPolling from "./hooks/useStatusPolling";
 import { showToast } from "./components/shared/Toast";
-
-interface ScheduleState {
-  push: string;
-  pull: string;
-}
+import type { ScheduleState } from "@/lib/types";
 
 function loadSchedule(): ScheduleState {
   if (typeof window === "undefined") return { push: "08:00", pull: "16:00" };

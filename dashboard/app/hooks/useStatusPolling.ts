@@ -1,17 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
-
-interface SensorData {
-  sensorValue: number;
-  status: string;
-  online: boolean;
-}
+import type { SensorData } from "@/lib/types";
 
 export default function useStatusPolling(interval = 2000) {
   const [data, setData] = useState<SensorData>({
     sensorValue: 1024,
     status: "Kering",
+    lastUpdate: new Date().toISOString(),
+    schedule: { push: "08:00", pull: "16:00" },
     online: false,
+    uptime: 0,
   });
 
   useEffect(() => {
