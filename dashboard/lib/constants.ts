@@ -1,0 +1,10 @@
+export const APP_NAME = "SkySense";
+export const POLL_INTERVAL = 2000;
+export const SCHEDULE_STORAGE_KEY = "skysense-schedule";
+export const OFFLINE_THRESHOLD = 10_000;
+export const TOAST_DURATION = 4000;
+export const API_BASE = "/api";
+export const STATUS_ENDPOINT = `${API_BASE}/status`;
+export const CONTROL_ENDPOINT = `${API_BASE}/control`;
+export const HEALTH_ENDPOINT = `${API_BASE}/health`;
+export const DEFAULT_SCHEDULE = { push: "08:00", pull: "16:00" } as const;
