@@ -61,7 +61,7 @@ export default function Dashboard() {
   };
 
   return (
-    <main className="min-h-screen bg-[#020617] text-slate-100 p-4 md:p-10 font-sans selection:bg-blue-500/30">
+    <main id="main-content" className="min-h-screen bg-[#020617] text-slate-100 p-4 md:p-10 font-sans selection:bg-blue-500/30">
       <DashboardHeader isSending={isSending} online={data.online} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
