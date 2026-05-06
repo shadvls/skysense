@@ -1,27 +1,22 @@
 ---
-name: Bug report
-about: Something broken on SkySense
-title: 'fix: '
+name: Bug Report
+about: Report a bug to help us improve
+title: "[BUG] "
 labels: bug
-assignees: ''
+assignees: shadvls
 ---
-
-**Component**
-<!-- e.g. Dashboard SensorCard, ESP rain detection, Telegram bot -->
-
 **Describe the bug**
-<!-- What happened vs what you expected -->
+A clear description of what the bug is.
 
-**Steps to reproduce**
-1.
-2.
-3.
+**To Reproduce**
+Steps to reproduce the behavior.
+
+**Expected behavior**
+What you expected to happen instead.
 
 **Environment**
-- OS:
-- Browser + version (if dashboard):
-- Device: Desktop / Mobile
-- ESP firmware version:
+- Dashboard version or commit hash
+- Browser / ESP firmware version
 
-**Screenshots / recordings**
-<!-- Attach if applicable -->
+**Additional context**
+Screenshots or logs, if applicable.
