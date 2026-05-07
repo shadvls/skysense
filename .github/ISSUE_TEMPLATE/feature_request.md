@@ -1,19 +1,18 @@
 ---
-name: Feature request
-about: New feature or enhancement for SkySense
-title: 'feat: '
+name: Feature Request
+about: Suggest an idea for SkySense
+title: "[FEAT] "
 labels: enhancement
-assignees: ''
+assignees: shadvls
 ---
+**Problem**
+What problem does this feature solve?
 
-**Which component**
-<!-- e.g. Dashboard ScheduleCard, ESP Telegram commands, API route -->
+**Solution**
+Describe the solution you'd like.
 
-**What should it do**
-<!-- Clear description of the feature -->
+**Alternatives**
+Any alternative solutions you've considered.
 
-**Design reference / inspiration**
-<!-- Link, screenshot, or description -->
-
-**Technical notes**
-<!-- Any constraints, e.g. needs ESP firmware update, new API endpoint -->
+**Additional context**
+Anything else that's relevant.
