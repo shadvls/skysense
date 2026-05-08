@@ -1,36 +1,21 @@
-## What
+## Description
+Briefly describe what this PR does.
 
-<!-- Short description of what this PR does. -->
+## Related Issue
+Fixes #(issue number)
 
-Closes #<!-- issue number, or remove this line -->
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Infrastructure / CI
+- [ ] Documentation
+- [ ] Refactor
 
----
-
-## Type
-
-- [ ] `feat` -- new feature
-- [ ] `fix` -- bug fix
-- [ ] `chore` -- deps, config, tooling
-- [ ] `refactor` -- restructure without behaviour change
-- [ ] `perf` -- performance improvement
-
----
+## Testing
+- [ ] Lint passes (`npm run lint`)
+- [ ] TypeScript compiles (`npx tsc --noEmit`)
+- [ ] Build succeeds (`npm run build`)
 
 ## Checklist
-
-**Dashboard**
-- [ ] Build passes locally (`npm run build`)
-- [ ] No TypeScript errors (`npx tsc --noEmit`)
-- [ ] ESLint passes (`npm run lint`)
-
-**ESP Firmware**
-- [ ] Compiles with PlatformIO (`pio run`)
-- [ ] Secrets not exposed (WiFi password, bot token)
-
----
-
-## Screenshots
-
-| Desktop | Mobile |
-|---------|--------|
-|         |        |
+- [ ] My code follows the project style
+- [ ] I have updated documentation if needed
