@@ -1,0 +1,15 @@
+dashboard:
+  - changed-files:
+      - any-glob-to-any-file: "dashboard/**/*"
+
+esp firmware:
+  - changed-files:
+      - any-glob-to-any-file: "esp/**/*"
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file: ".github/workflows/*"
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: "*.md"
