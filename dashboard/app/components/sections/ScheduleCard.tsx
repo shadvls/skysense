@@ -56,7 +56,7 @@ export default function ScheduleCard({ schedule, setSchedule }: ScheduleProps) {
         </div>
         <div>
           <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">
-            AI Intelligence
+            System Monitor
           </p>
           <p className="text-sm font-medium text-slate-300 leading-relaxed">
             Auto-retraction active. System monitors precipitation threshold

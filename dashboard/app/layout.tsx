@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SkySense AI | Dashboard",
+  title: "SkySense | Dashboard",
   description: "Advanced IoT Rain Sensing System for Smart Laundry",
 };
 
