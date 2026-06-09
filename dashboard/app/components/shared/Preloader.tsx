@@ -34,7 +34,7 @@ export default function Preloader() {
         </div>
 
         <h2 className="text-2xl font-black tracking-[0.5em] text-white uppercase">
-          SkySense <span className="text-blue-500">AI</span>
+          SkySense
         </h2>
 
         <div className="mt-4 h-0.5 w-48 bg-slate-800 relative overflow-hidden">
@@ -46,7 +46,7 @@ export default function Preloader() {
           />
         </div>
         <p className="mt-4 text-[10px] font-bold text-slate-500 tracking-widest uppercase">
-          Initializing Neural Link...
+          Initializing System...
         </p>
       </motion.div>
     </div>

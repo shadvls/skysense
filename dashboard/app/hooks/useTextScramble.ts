@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 
 export default function useTextScramble() {
-  const chars = "!<>-_\\/[]{}—=+*^?#________";
+  const chars = "!<>-_\\/[]{}=+*^?#________";
 
   const scramble = useCallback((text: string, setText: (t: string) => void) => {
     let frame = 0;
