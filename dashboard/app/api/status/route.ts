@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
-// In-memory storage (Akan reset jika serverless function restart)
-let systemState = {
+let systemState: Record<string, unknown> = {
   sensorValue: 1024,
   status: "Kering",
   lastUpdate: new Date().toISOString(),
@@ -12,7 +11,14 @@ let systemState = {
 };
 
 export async function GET() {
-  return NextResponse.json(systemState, {
+  const state = {
+    ...systemState,
+    online:
+      Date.now() - new Date(systemState.lastUpdate as string).getTime() <
+      10000,
+  };
+
+  return NextResponse.json(state, {
     headers: {
       "Cache-Control": "no-store, max-age=0",
     },

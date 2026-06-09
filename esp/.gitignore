@@ -20,3 +20,6 @@ build/
 # OS Metadata
 .DS_Store
 Thumbs.db
+
+# Secrets (copy from config.example.h)
+include/config.h

@@ -5,44 +5,27 @@
 #include <UniversalTelegramBot.h>
 #include <ArduinoJson.h>
 #include <Servo.h>
+#include "config.h"
 
-// --- CONFIG ---
-const char* ssid = "Yansha";
-const char* password = "YOUR_WIFI_PASSWORD";
-const char* botToken = "YOUR_BOT_TOKEN";
-const char* chatId = "YOUR_CHAT_ID";
+WiFiClientSecure client;
+UniversalTelegramBot bot(BOT_TOKEN, client);
+Servo jemuranServo;
 
-// URL Dashboard
-const char* dashboardApi = "https://skysense.yansha.dev/api/status"; 
-
-// --- PIN MAPPING ---
-const int RAIN_SENSOR_PIN = A0;
-const int SERVO_PIN = D1;
-
-// --- PARAMETER & STATE ---
-const int RAIN_THRESHOLD = 750; 
-const int botRequestDelay = 500; 
-const int dashboardInterval = 100; 
+bool laundryProtected = false;
+bool isAutomated = true;
 
 unsigned long lastTimeBotRan = 0;
 unsigned long lastTimeDashboardUpdate = 0;
 
-WiFiClientSecure client;
-UniversalTelegramBot bot(botToken, client);
-Servo jemuranServo;
-
-bool laundryProtected = false;
-bool isAutomated = true; // State Mode: True = Otomatis, False = Manual
-
-// --- PROTOTYPES ---
 void connectWiFi();
 void handleNewMessages(int numNewMessages);
 void sendDataToDashboard(int sensorValue, String status, String mode);
+void checkPendingCommands();
 
 void connectWiFi() {
     if (WiFi.status() == WL_CONNECTED) return;
     Serial.print("Connecting to WiFi...");
-    WiFi.begin(ssid, password);
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     while (WiFi.status() != WL_CONNECTED) {
         delay(100);
         Serial.print(".");
@@ -52,20 +35,65 @@ void connectWiFi() {
 
 void sendDataToDashboard(int sensorValue, String status, String mode) {
     WiFiClientSecure httpsClient;
-    httpsClient.setInsecure(); 
-    
+    httpsClient.setInsecure();
+
     HTTPClient http;
-    if (http.begin(httpsClient, dashboardApi)) {
+    if (http.begin(httpsClient, DASHBOARD_API)) {
         http.addHeader("Content-Type", "application/json");
-        
-        StaticJsonDocument<128> doc;
+
+        StaticJsonDocument<192> doc;
         doc["sensorValue"] = sensorValue;
         doc["status"] = status;
-        doc["mode"] = mode; // Kirim info mode ke dashboard juga
-        
+        doc["mode"] = mode;
+
         String requestBody;
         serializeJson(doc, requestBody);
-        http.POST(requestBody);
+        int httpCode = http.POST(requestBody);
+
+        if (httpCode > 0) {
+            String response = http.getString();
+            StaticJsonDocument<96> respDoc;
+            DeserializationError err = deserializeJson(respDoc, response);
+            if (!err && respDoc["pending"]) {
+                String cmd = respDoc["pending"].as<String>();
+                if (cmd == "push" && !isAutomated) {
+                    jemuranServo.write(0);
+                    laundryProtected = false;
+                } else if (cmd == "pull" && !isAutomated) {
+                    jemuranServo.write(180);
+                    laundryProtected = true;
+                }
+            }
+        }
+
+        http.end();
+    }
+}
+
+void checkPendingCommands() {
+    WiFiClientSecure httpsClient;
+    httpsClient.setInsecure();
+
+    HTTPClient http;
+    if (http.begin(httpsClient, CONTROL_API)) {
+        int httpCode = http.GET();
+        if (httpCode > 0) {
+            String response = http.getString();
+            StaticJsonDocument<96> respDoc;
+            DeserializationError err = deserializeJson(respDoc, response);
+            if (!err && respDoc["action"] && respDoc["pending"] == true) {
+                String cmd = respDoc["action"].as<String>();
+                if (cmd == "push" && !isAutomated) {
+                    jemuranServo.write(0);
+                    laundryProtected = false;
+                    bot.sendMessage(CHAT_ID, "☀️ *Remote:* Membuka jemuran", "Markdown");
+                } else if (cmd == "pull" && !isAutomated) {
+                    jemuranServo.write(180);
+                    laundryProtected = true;
+                    bot.sendMessage(CHAT_ID, "🌧️ *Remote:* Menutup jemuran", "Markdown");
+                }
+            }
+        }
         http.end();
     }
 }
@@ -73,34 +101,34 @@ void sendDataToDashboard(int sensorValue, String status, String mode) {
 void handleNewMessages(int numNewMessages) {
     for (int i = 0; i < numNewMessages; i++) {
         String chat_id = String(bot.messages[i].chat_id);
-        if (chat_id != chatId) continue;
+        if (chat_id != CHAT_ID) continue;
 
         String text = bot.messages[i].text;
 
         if (text == "/manual") {
             isAutomated = false;
-            bot.sendMessage(chatId, "🛠️ *Mode Manual Aktif:* Sensor hujan dinonaktifkan.", "Markdown");
-        } 
+            bot.sendMessage(CHAT_ID, "🛠️ *Mode Manual Aktif:* Sensor hujan dinonaktifkan.", "Markdown");
+        }
         else if (text == "/automate") {
             isAutomated = true;
-            bot.sendMessage(chatId, "🤖 *Mode Automate Aktif:* Sistem kembali memantau cuaca.", "Markdown");
+            bot.sendMessage(CHAT_ID, "🤖 *Mode Automate Aktif:* Sistem kembali memantau cuaca.", "Markdown");
         }
         else if (text == "/push") {
             if (!isAutomated) {
                 jemuranServo.write(0);
                 laundryProtected = false;
-                bot.sendMessage(chatId, "☀️ *Manual:* Membuka jemuran", "Markdown");
+                bot.sendMessage(CHAT_ID, "☀️ *Manual:* Membuka jemuran", "Markdown");
             } else {
-                bot.sendMessage(chatId, "❌ Gagal. Ubah ke mode `/manual` terlebih dahulu.", "Markdown");
+                bot.sendMessage(CHAT_ID, "❌ Gagal. Ubah ke mode `/manual` terlebih dahulu.", "Markdown");
             }
-        } 
+        }
         else if (text == "/pull") {
             if (!isAutomated) {
                 jemuranServo.write(180);
                 laundryProtected = true;
-                bot.sendMessage(chatId, "🌧️ *Manual:* Menutup jemuran", "Markdown");
+                bot.sendMessage(CHAT_ID, "🌧️ *Manual:* Menutup jemuran", "Markdown");
             } else {
-                bot.sendMessage(chatId, "❌ Gagal. Ubah ke mode `/manual` terlebih dahulu.", "Markdown");
+                bot.sendMessage(CHAT_ID, "❌ Gagal. Ubah ke mode `/manual` terlebih dahulu.", "Markdown");
             }
         }
     }
@@ -111,11 +139,11 @@ void setup() {
     jemuranServo.attach(SERVO_PIN);
     jemuranServo.write(0);
     pinMode(RAIN_SENSOR_PIN, INPUT);
-    
+
     connectWiFi();
     client.setInsecure();
-    
-    bot.sendMessage(chatId, "🤖 *SkySense Online!*\nMode Default: *Automate*\n\nCommands:\n/manual - Mode Kendali Tangan\n/automate - Mode Sensor Otomatis", "Markdown");
+
+    bot.sendMessage(CHAT_ID, "🤖 *SkySense Online!*\nMode Default: *Automate*\n\nCommands:\n/manual - Mode Kendali Tangan\n/automate - Mode Sensor Otomatis", "Markdown");
 }
 
 void loop() {
@@ -126,28 +154,25 @@ void loop() {
     String currentStatus = (sensorValue < RAIN_THRESHOLD) ? "Basah" : "Kering";
     String currentMode = isAutomated ? "Automate" : "Manual";
 
-    // 1. Logika Otomatis (Hanya jalan jika isAutomated == true)
     if (isAutomated) {
         if (sensorValue < RAIN_THRESHOLD && !laundryProtected) {
             jemuranServo.write(180);
             laundryProtected = true;
-            bot.sendMessage(chatId, "⚠️ *Otomatis:* Hujan! Menutup jemuran.", "Markdown");
-        } 
+            bot.sendMessage(CHAT_ID, "⚠️ *Otomatis:* Hujan! Menutup jemuran.", "Markdown");
+        }
         else if (sensorValue > (RAIN_THRESHOLD + 100) && laundryProtected) {
             jemuranServo.write(0);
             laundryProtected = false;
-            bot.sendMessage(chatId, "☀️ *Otomatis:* Terang! Membuka jemuran.", "Markdown");
+            bot.sendMessage(CHAT_ID, "☀️ *Otomatis:* Terang! Membuka jemuran.", "Markdown");
         }
     }
 
-    // 2. Update Dashboard (Realtime 100ms)
-    if (currentMillis - lastTimeDashboardUpdate > dashboardInterval) {
+    if (currentMillis - lastTimeDashboardUpdate > DASHBOARD_INTERVAL) {
         sendDataToDashboard(sensorValue, currentStatus, currentMode);
         lastTimeDashboardUpdate = currentMillis;
     }
 
-    // 3. Telegram Polling (500ms)
-    if (currentMillis - lastTimeBotRan > botRequestDelay) {
+    if (currentMillis - lastTimeBotRan > BOT_REQUEST_DELAY) {
         int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
         if (numNewMessages) handleNewMessages(numNewMessages);
         lastTimeBotRan = currentMillis;

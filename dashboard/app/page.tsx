@@ -4,14 +4,17 @@ import DashboardHeader from "./components/sections/DashboardHeader";
 import SensorCard from "./components/sections/SensorCard";
 import ScheduleCard from "./components/sections/ScheduleCard";
 
-// Definisikan interface agar sinkron dengan komponen ScheduleCard
 interface ScheduleState {
   push: string;
   pull: string;
 }
 
 export default function Dashboard() {
-  const [data, setData] = useState({ sensorValue: 1024, status: "Kering" });
+  const [data, setData] = useState({
+    sensorValue: 1024,
+    status: "Kering",
+    online: false,
+  });
   const [schedule, setSchedule] = useState<ScheduleState>({
     push: "08:00",
     pull: "16:00",
@@ -26,7 +29,6 @@ export default function Dashboard() {
         const json = await res.json();
         setData(json);
       } catch (error) {
-        // Menggunakan error untuk logging agar tidak kena warning unused-vars
         console.error("[FETCH_ERROR]:", error);
       }
     }, 2000);
@@ -55,7 +57,7 @@ export default function Dashboard() {
 
   return (
     <main className="min-h-screen bg-[#020617] text-slate-100 p-4 md:p-10 font-sans selection:bg-blue-500/30">
-      <DashboardHeader isSending={isSending} />
+      <DashboardHeader isSending={isSending} online={data.online} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <SensorCard data={data} onCommand={sendCommand} />
