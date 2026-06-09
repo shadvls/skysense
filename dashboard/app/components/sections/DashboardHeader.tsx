@@ -23,7 +23,7 @@ export default function DashboardHeader({ isSending, online }: HeaderProps) {
         <h1 className="text-5xl font-black tracking-tighter bg-linear-to-r from-blue-400 via-cyan-400 to-indigo-500 bg-clip-text text-transparent">
           SKYSENSE{" "}
           <span className="text-xs font-mono border border-blue-500/50 px-2 py-1 rounded ml-2 text-blue-400">
-            V2.0
+            v1.0.0
           </span>
         </h1>
         <p className="text-slate-400 flex items-center gap-2 mt-2 font-medium">
