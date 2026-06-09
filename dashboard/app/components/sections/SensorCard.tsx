@@ -7,7 +7,7 @@ import useMouseProximity from "@/app/hooks/useMouseProximity";
 import useGlitchEffect from "@/app/hooks/useGlitchEffect";
 
 interface SensorProps {
-  data: { sensorValue: number; status: string };
+  data: { sensorValue: number; status: string; online: boolean };
   onCommand: (cmd: "push" | "pull") => void;
 }
 
@@ -27,24 +27,40 @@ export default function SensorCard({ data, onCommand }: SensorProps) {
     }
   }, [data.sensorValue]);
 
+  if (!data.online) {
+    return (
+      <motion.div className="md:col-span-2 bg-slate-900/60 backdrop-blur-2xl p-6 md:p-10 rounded-[2.5rem] border border-red-500/20 shadow-2xl relative overflow-hidden group min-h-112.5 flex flex-col justify-center items-center">
+        <div className="relative z-10 text-center">
+          <div className="relative mb-6">
+            <CloudRain size={80} className="text-red-500/50 mx-auto" />
+            <div className="absolute -inset-4 bg-red-500/10 blur-2xl rounded-full"></div>
+          </div>
+          <h2 className="text-5xl md:text-7xl font-black text-red-500/80 mb-2">
+            OFFLINE
+          </h2>
+          <p className="text-red-400/60 font-mono text-xs tracking-widest uppercase">
+            No signal from ESP8266
+          </p>
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       style={{ x: pushX, y: pushY }}
       className="md:col-span-2 bg-slate-900/60 backdrop-blur-2xl p-6 md:p-10 rounded-[2.5rem] border border-white/5 shadow-2xl relative overflow-hidden group min-h-112.5 flex flex-col justify-between"
     >
-      {/* 1. Background Watermark - Dibuat sangat transparan agar tidak nabrak teks utama */}
       <div className="absolute -top-10 -right-10 opacity-[0.03] group-hover:opacity-10 transition-opacity duration-1000 pointer-events-none">
         <CloudRain size={300} />
       </div>
 
       <div className="relative z-10 w-full">
-        {/* Label Atas */}
         <p className="text-blue-500 uppercase tracking-[0.4em] text-[9px] font-black mb-6 opacity-80">
           Atmospheric Live Feed
         </p>
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-          {/* Angka Utama */}
           <div
             style={{
               opacity: glitch.opacity,
@@ -63,7 +79,6 @@ export default function SensorCard({ data, onCommand }: SensorProps) {
             </p>
           </div>
 
-          {/* Ikon Status - Dibuat lebih proporsional */}
           <AnimatePresence mode="wait">
             <motion.div
               key={data.status}
@@ -90,7 +105,6 @@ export default function SensorCard({ data, onCommand }: SensorProps) {
         </div>
       </div>
 
-      {/* 2. Control Section - Dipaksa di bawah agar tidak tumpang tindih */}
       <div className="relative z-10 mt-10">
         <div className="flex flex-wrap gap-3 md:gap-4">
           <div

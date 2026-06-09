@@ -6,9 +6,10 @@ import useMagnetic from "@/app/hooks/useMagnetic";
 
 interface HeaderProps {
   isSending: boolean;
+  online: boolean;
 }
 
-export default function DashboardHeader({ isSending }: HeaderProps) {
+export default function DashboardHeader({ isSending, online }: HeaderProps) {
   const staggerRef = useStaggerReveal();
   const refreshRef = useMagnetic();
   const syncRef = useMagnetic();
@@ -27,10 +28,18 @@ export default function DashboardHeader({ isSending }: HeaderProps) {
         </h1>
         <p className="text-slate-400 flex items-center gap-2 mt-2 font-medium">
           <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+            <span
+              className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                online ? "bg-green-400" : "bg-red-400"
+              }`}
+            ></span>
+            <span
+              className={`relative inline-flex rounded-full h-3 w-3 ${
+                online ? "bg-green-500" : "bg-red-500"
+              }`}
+            ></span>
           </span>
-          ESP8266 Live Node
+          {online ? "ESP8266 Live Node" : "ESP8266 Offline"}
         </p>
       </div>
 
