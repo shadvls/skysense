@@ -19,6 +19,6 @@ jobs:
           git log --oneline --no-decorate $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")..HEAD | \
             sed 's/^/- /' >> release-notes.md
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           body_path: release-notes.md
